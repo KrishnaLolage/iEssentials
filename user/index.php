@@ -35,7 +35,14 @@ class User
 		{
 			if($_SERVER["REQUEST_METHOD"] == "POST")
 			{
-				$data = $this->addUser();
+				if($_POST["action"] ==  "create")
+				{
+					$data = $this->addUser();
+				}
+				else
+				{
+					$data = $this->updateUserNew();
+				}
 			}
 			else if ($_SERVER["REQUEST_METHOD"] == "GET")
 			{
@@ -45,49 +52,124 @@ class User
 			}
 			else if($_SERVER["REQUEST_METHOD"] == "PUT")
 			{
-				$data = $this->updateSection();
+				//$data = $this->addUser();
 			}
     	}
-    	
+       
     	echo json_encode($data);
     }
     
     //INSERT INTO `iEssentials`.`User` (`Username`, `Password`, `Phone`) VALUES ('Krishna', 'Qwerty123', '2692058769')
     public function addUser(){
-        if (isset($_POST["username"]) && isset($_POST["pwd"]) && isset($_POST["phone"])) {
+    
+    try
+    {
+    if(isset($_FILES['uploadedfile']['name']))
+        {
+        		$uploaddir = 'pics/';
+    			$file = basename($_FILES['uploadedfile']['name']);
+			    $uploadfile = $uploaddir . $file;
+			    move_uploaded_file($_FILES['uploadedfile']['tmp_name'], $uploadfile);
+			    
+			    $imgData =addslashes (file_get_contents($uploadfile));
+// 			    $sql = "UPDATE User SET Image = {$imgData} WHERE username = ".$uname;
+// 			    $data2 = mysqli_query($this->conn, $sql);
+        }
+        
+     if (isset($_POST["username"]) && isset($_POST["pwd"]) && isset($_POST["phone"])) {
             $uname = $_POST["username"];
             $pwd   = $_POST["pwd"];
             $phone = $_POST["phone"];
-            
-            $sql = "INSERT INTO User (Username, Password, Phone) VALUES ('" . $uname . "', '" . $pwd . "', '" . $phone . "')";
+
+            $sql = "INSERT INTO User (Username, Password, Phone, Image) VALUES ('" . $uname . "', '" . $pwd . "', '" . $phone . "', '{$imgData}')";
 
             if (mysqli_query($this->conn, $sql)) {
+            
                 $data = $this->getUser($uname, $pwd);
+                
             } else {
                 $data = array(
                     "Error" => "Failed to create user. Please try agian."
                 );
             }
-        } else {
-            $data = array(
-                "Error" => "Params mismatch"
-            );
         }
         
-    	return $data;
+		return $data;
+		}
+		catch(Exception $e)
+		{
+			$data = array(
+                    "Exception" => "Exception ".$e
+                );
+		}
+		
+		return $data;
     }
     
+    public function updateUserNew(){
+    		
+    		if(isset($_FILES['uploadedfile']['name']) && isset($_POST["user_id"]))
+    		{
+   				$uploaddir = 'pics/';
+    			$file = basename($_FILES['uploadedfile']['name']);
+			    $uploadfile = $uploaddir . $file;
+
+			    if (move_uploaded_file($_FILES['uploadedfile']['tmp_name'], $uploadfile)) {
+			    
+			    	$imgData =addslashes (file_get_contents($uploadfile));
+
+			    	$sql = "UPDATE User SET Image = {$imgData} WHERE id = ".$_POST["user_id"];
+			    	$data2 = mysqli_query($this->conn, $sql);
+    			}
+			    else {
+			    
+			    $data = array(
+                    "Error" => "Failed to update user. Please try agian."
+                );
+    			}
+			}
+    
+     if (isset($_POST["username"]) && isset($_POST["pwd"]) && isset($_POST["user_id"])) {
+            $uname = $_POST["username"];
+            $pwd   = $_POST["pwd"];
+            $phone = $_POST["phone"];
+            
+            if(isset($_POST["phone"]))
+            {
+    			$sql = "UPDATE User SET Username = '".$uname."', Password = '".$pwd."', Phone = ".$phone." WHERE id = ".$_POST["user_id"];
+    		}
+    		else
+    		{
+    			$sql = "UPDATE User SET Username = '".$uname."', Password = '".$pwd."' WHERE id = ".$_POST["user_id"];
+    		}
+    		
+            if (mysqli_query($this->conn, $sql)) {
+                $data = $this->getUser($uname, $pwd);
+            } else {
+                $data = array(
+                    "Error" => "Failed to update user. Please try agian."
+                );
+            }
+        }
+
+		if($data2 != null)
+			array_push($data, $data2);
+		return $data;
+    }
     
     public function getUser($uname, $pwd)
     {
-        $sql = "Select * from User where Username = '" . $uname . "' AND Password = '" . $pwd . "'";
-        
+        $sql = "SELECT id, Username, Password, Phone, Image FROM User where Username = '" . $uname . "' AND Password = '" . $pwd . "'";
+
         $data = mysqli_query($this->conn, $sql);
         
         $result = $this->conn->query($sql);
-        
         if (mysqli_num_rows($result) > 0) {
             $data = mysqli_fetch_assoc($result);
+            
+            $img = $data["Image"];
+    		$b64img = base64_encode ($img);
+		    $data["Image"] = $b64img;
         } else {
             $data = array(
                 "Error" => "Please verify username and password."
@@ -99,14 +181,22 @@ class User
     
     public function getUserById($userid)
     {
-        $sql = "Select * from User where id = '" . $userid;
+        $sql = "SELECT id, Username, Password, Phone, Image FROM User where id = " . $userid;
         
         $data = mysqli_query($this->conn, $sql);
         
         $result = $this->conn->query($sql);
         
+        	// Read from $fp file pointer using the size of an upload temp name (stored as $tmpName)
+		$content = fread($fp, filesize($tmpName));
+
         if (mysqli_num_rows($result) > 0) {
             $data = mysqli_fetch_assoc($result);
+            
+            $img = $data["Image"];
+    		$b64img = base64_encode ($img);
+		    $data["Image"] = $b64img;
+		    
         } else {
             $data = array(
                 "Error" => "Please verify username and password."
@@ -133,7 +223,7 @@ class User
                     "Error" => "Failed to create user. Please try agian."
                 );
             }
-        } 
+    } 
         
     	return $data;
 	}

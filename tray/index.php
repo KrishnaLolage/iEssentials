@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
-require $_SERVER["DOCUMENT_ROOT"] . '/hackathon/iEssentials/twilio-php/Services/Twilio.php';
-class Section
+
+class Tray
 {
     public $servername;
     public $username;
@@ -22,6 +22,7 @@ class Section
         if (!$this->conn) {
             die("Connection failed: " . mysqli_connect_error());
         }
+        
     }
     
     // Destructor - close conn connection
@@ -38,39 +39,36 @@ class Section
                 $data = "NO POST Method";
             } else if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
-            if(!isset($_GET["hardware_update"]))
-            {
-                if (isset($_GET["section_id"])) {
-                    $data = $this->getSectionById($_GET["section_id"]);
-                } else if (isset($_GET["tray_id"])) {
-                    $data = $this->getAllSectionWithTaryId();
-                } else {
-                    $data = $this->getAllSection();
-                }
+				$data = $this->getAllTrayDetails();
             }
             else
             {
             	$data = $this->updateSectionFromHardware();
             }
-            } else if ($_SERVER["REQUEST_METHOD"] == "PUT") {
-                $data = $this->updateSection();
-            }
+        } else if ($_SERVER["REQUEST_METHOD"] == "PUT") {
+            $data = $this->updateSection();
         }
         
         echo json_encode($data);
     }
     
     
-    public function getAllSection()
+    public function getAllTrayDetails()
     {
         
-        $sql = "SELECT id as section_id, Name, ItemName, Quantity, OriginalQty, Unit, UpdatedTime, Threshold, Status, TrayId as tray_id, GenericIdentifier, UserItemQty FROM Section";
+        $sql = "SELECT * from Tray";
         
         $data = mysqli_query($this->conn, $sql);
         
         if (mysqli_num_rows($data) > 0) {
             $dat = [];
             while ($row = mysqli_fetch_assoc($data)) {
+            	
+            	$trayid = $row["id"];
+
+            	$sectionData = $this->getAllSectionWithTaryId($trayid);
+            	
+            	$row["sections"] = $sectionData;
                 array_push($dat, $row);
             }
             $data = $dat;
@@ -116,11 +114,15 @@ class Section
             $data = mysqli_query($this->conn, $sql);
             
             if (mysqli_num_rows($data) > 0) {
-                $data = mysqli_fetch_assoc($data);
+            
+            	$dat = [];
+            	while ($row = mysqli_fetch_assoc($data)) {
+              		  	array_push($dat, $row);
+           		 }
+            	$data = $dat;
+//                 $data = mysqli_fetch_assoc($data);
             } else {
-                $data = array(
-                    "Error" => "Please verify username and password."
-                );
+                $data = null;
             }
         } else {
             $data = array(
@@ -250,7 +252,7 @@ class Section
     }
 }
 
-$section = new Section;
-$section->processRequest();
+$tray = new Tray;
+$tray->processRequest();
 
 ?>
