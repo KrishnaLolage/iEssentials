@@ -39,6 +39,10 @@ class User
 				{
 					$data = $this->addUser();
 				}
+				else if($_POST["action"] ==  "SaveDeviceToken")
+				{
+					$data = $this->saveUserMobileDeviceToken();
+				}
 				else
 				{
 					$data = $this->updateUserNew();
@@ -154,6 +158,36 @@ class User
 
 		if($data2 != null)
 			array_push($data, $data2);
+		return $data;
+    }
+    
+    public function saveUserMobileDeviceToken(){
+    		
+     if (isset($_POST["device_type"]) && isset($_POST["device_token"]) && isset($_POST["user_id"])) {
+            $deviceType = $_POST["device_type"];
+            $deviceToken   = $_POST["device_token"];
+            $userID = $_POST["user_id"];
+            
+            //INSERT INTO MobileDevices (DeviceType, DeviceToken, UserId) VALUES ('iOS', '<eb8708ba 26e30765 479a4620 2c08efa7 b065a7ad c7473c94 b8b060e7 1168e68a>', 1)"
+            $sql = "INSERT INTO MobileDevices (DeviceType, DeviceToken, UserId) VALUES ('" . $deviceType . "', '" . $deviceToken . "', " . $userID. ")";
+                
+            if (mysqli_query($this->conn, $sql)) {
+            
+                $data = array(
+                    "Result" => "Success",
+                    "Message" => "Device token saved successfully"
+                );
+                
+            } else {
+                 $data = array(
+                 	"Error" => "Error while saving device token",
+                    "Result" => "Failure",
+                    "SQL Error" => mysqli_error($this->conn)
+                );
+            }
+            
+        }
+
 		return $data;
     }
     

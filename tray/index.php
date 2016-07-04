@@ -39,7 +39,11 @@ class Tray
                 $data = "NO POST Method";
             } else if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
-				$data = $this->getAllTrayDetails();
+				if(isset($_GET["user_id"]))
+				{
+					$memberId = $_GET["user_id"];
+					$data = $this->getAllTrayDetailsForMember($memberId);
+				}
             }
             else
             {
@@ -53,11 +57,10 @@ class Tray
     }
     
     
-    public function getAllTrayDetails()
+    public function getAllTrayDetailsForMember($memberId)
     {
         
-        $sql = "SELECT * from Tray";
-        
+        $sql = "SELECT * from Tray where userid = ".$memberId;
         $data = mysqli_query($this->conn, $sql);
         
         if (mysqli_num_rows($data) > 0) {
@@ -74,7 +77,7 @@ class Tray
             $data = $dat;
         } else {
             $data = array(
-                "Error" => "Section list could not be fetched. Please try later."
+                "Error" => "Tray list could not be fetched. Please try later."
             );
         }
         

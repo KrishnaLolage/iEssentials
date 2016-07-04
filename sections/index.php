@@ -1,6 +1,8 @@
 <?php
 header('Content-Type: application/json');
 require $_SERVER["DOCUMENT_ROOT"] . '/hackathon/iEssentials/twilio-php/Services/Twilio.php';
+require $_SERVER["DOCUMENT_ROOT"] . '/hackathon/iEssentials/pushnotifications/index.php';
+
 class Section
 {
     public $servername;
@@ -33,9 +35,9 @@ class Section
     public function processRequest()
     {
         if (isset($_SERVER["REQUEST_METHOD"])) {
-            if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            if ($_SERVER["REQUEST_METHOD"] == "PUT") {
                 //$data = $this->createSection();
-                $data = "NO POST Method";
+                $data = "NO PUT Method";
             } else if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
             if(!isset($_GET["hardware_update"]))
@@ -52,7 +54,7 @@ class Section
             {
             	$data = $this->updateSectionFromHardware();
             }
-            } else if ($_SERVER["REQUEST_METHOD"] == "PUT") {
+            } else if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $data = $this->updateSection();
             }
         }
@@ -133,16 +135,13 @@ class Section
     
     
     Public function updateSection()
-    {
-        $post_vars = file_get_contents("php://input");
-        $post_vars = (array) json_decode($post_vars);
-        
-        if (isset($post_vars["section_id"]) && isset($post_vars["name"]) && isset($post_vars["item_name"]) && isset($post_vars["quantity"])) {
+    {   	
+        if (isset($_POST["section_id"]) && isset($_POST["name"]) && isset($_POST["item_name"]) && isset($_POST["userItemQty"])) {
             
-            $sql = "UPDATE Section SET Name = '" . $post_vars["name"] . "', ItemName = '" . $post_vars["item_name"] . "', Quantity = " . $post_vars["quantity"] . ", Status = 'Low' WHERE id = " . $post_vars["section_id"];
-            
+            $sql = "UPDATE Section SET Name = '" . $_POST["name"] . "', ItemName = '" . $_POST["item_name"] . "', UserItemQty = " . $_POST["userItemQty"] . ", Status = 'Low' WHERE id = " . $_POST["section_id"];
+
             if (mysqli_query($this->conn, $sql)) {
-                $data = $this->getSectionById($post_vars["section_id"]);
+                $data = $this->getSectionById($_POST["section_id"]);
                 
 //                 if (!isset($data["Error"])) {
                     if ($data["Status"] == "Low" || $data["Status"] == "Empty") {
@@ -179,7 +178,15 @@ class Section
                     					"section" => $data
                 					);
                     }
-//                 }
+                
+                
+                if (isset($_POST["user_id"]))
+                {
+                	//send Silent Notification
+                	$this->sendSilentNotificationtoUserApp($_POST["user_id"]);
+                	array_push($data, $dat);
+                }
+                
                 
             } else {
                 $data = array(
@@ -187,6 +194,12 @@ class Section
                     "SQL Error" => mysqli_error($this->conn)
                 );
             }
+        }
+        else
+        {
+        	$data = array(
+                    "Error" => "Required params missing"
+                );
         }
         
         return $data;
@@ -208,11 +221,18 @@ class Section
                         $auth_token  = '1b2d0de791aad80733cd872a37017258';
                         $client      = new Services_Twilio($account_sid, $auth_token);
                         
-                        $message = $client->account->messages->create(array(
-                            'To' => "+918867721983",
-                            'From' => "+19103632856",
-                            'Body' => "Running Low"
-                        ));
+                        
+                        $phones = array("+919860262264");
+                        
+                        foreach ($phones as $value) {
+						 
+						 	$message = $client->account->messages->create(array(
+                         	   'To' => $value,
+                         	   'From' => "+19103632856",
+                        	    'Body' => "Running Low"
+                     	   ));
+                           
+						}
                         
                         if($message->sid)
                         {
@@ -247,6 +267,38 @@ class Section
         }
         
         return $data;
+    }
+
+
+	Public function sendSilentNotificationtoUserApp($userId)
+	{
+        if ($userId) {
+            $sql = "SELECT distinct(M.DeviceToken), M.Id, M.DeviceType, M.UserId  FROM MobileDevices M inner join Tray T on (M.UserId = T.UserId) inner join Section S on (T.id = S.TrayId) Where M.UserId = " . $userId;
+            
+            $data = mysqli_query($this->conn, $sql);
+        
+        	if (mysqli_num_rows($data) > 0) {
+        	    $dat = [];
+            	while ($row = mysqli_fetch_assoc($data)) {
+               	 array_push($dat, $row["DeviceToken"]);
+            	}
+            	
+            		$push = new PushNotification();
+					$dat = $push->sendNotificationtoDevice($dat[0], "Hello Krishna");
+
+        	} else {
+            	$dat = array(
+                	"Error" => "Section list could not be fetched. Please try later."
+            	);
+        }
+        }
+        else {
+            $dat = array(
+                "Error" => "user id param missing"
+            );
+        }
+                
+        return $dat;
     }
 }
 
