@@ -183,9 +183,12 @@ class Section
                 if (isset($_POST["user_id"]))
                 {
                 	//send Silent Notification
-                	$this->sendSilentNotificationtoUserApp($_POST["user_id"]);
+                	$this->sendSilentNotificationtoUserApp($_POST["user_id"], $_POST["section_id"]);
                 	array_push($data, $dat);
                 }
+                
+                $push = new PushNotification();
+				$dat = $push->sendSilentNotificationtoDevice($row["DeviceToken"]);
                 
                 
             } else {
@@ -224,12 +227,14 @@ class Section
                         
                         $phones = array("+919860262264");
                         
+                        $msg = "Your ".$data["ItemName"]." level is low.";                
+                        
                         foreach ($phones as $value) {
 						 
 						 	$message = $client->account->messages->create(array(
                          	   'To' => $value,
                          	   'From' => "+19103632856",
-                        	    'Body' => "Running Low"
+                        	    'Body' => $msg
                      	   ));
                            
 						}
@@ -248,6 +253,11 @@ class Section
                     					"section" => $data
                 					);
                         }
+                        
+                        //Send Push notification
+						$pushData = $this->sendNotificationtoUserApp($_GET["user_id"], $_GET["section_id"]);
+						
+						array_push($data, array("PushNotification"=>$pushData));
                     }
                     else
                     {
@@ -270,10 +280,10 @@ class Section
     }
 
 
-	Public function sendSilentNotificationtoUserApp($userId)
+	Public function sendSilentNotificationtoUserApp($userId, $sectionId)
 	{
         if ($userId) {
-            $sql = "SELECT distinct(M.DeviceToken), M.Id, M.DeviceType, M.UserId  FROM MobileDevices M inner join Tray T on (M.UserId = T.UserId) inner join Section S on (T.id = S.TrayId) Where M.UserId = " . $userId;
+            $sql = "SELECT distinct(M.DeviceToken), M.Id, M.DeviceType, M.UserId  FROM MobileDevices M inner join Tray T on (M.UserId = T.UserId) inner join Section S on (T.id = S.TrayId) Where M.UserId = " . $userId." AND S.Id = ". $sectionId;
             
             $data = mysqli_query($this->conn, $sql);
         
@@ -281,10 +291,9 @@ class Section
         	    $dat = [];
             	while ($row = mysqli_fetch_assoc($data)) {
                	 array_push($dat, $row["DeviceToken"]);
+               	 $push = new PushNotification();
+				 $dat = $push->sendSilentNotificationtoDevice($row["DeviceToken"]);
             	}
-            	
-            		$push = new PushNotification();
-					$dat = $push->sendNotificationtoDevice($dat[0], "Hello Krishna");
 
         	} else {
             	$dat = array(
@@ -298,6 +307,39 @@ class Section
             );
         }
                 
+        return $dat;
+    }
+    
+    
+    Public function sendNotificationtoUserApp($userId, $sectionId)
+	{
+        if ($userId) {
+            $sql = "SELECT distinct(M.DeviceToken), M.Id, M.DeviceType, M.UserId, S.ItemName FROM MobileDevices M inner join Tray T on (M.UserId = T.UserId) inner join Section S on (T.id = S.TrayId) Where M.UserId = " . $userId." AND S.Id = ". $sectionId;
+            
+            $data = mysqli_query($this->conn, $sql);
+        
+        	if (mysqli_num_rows($data) > 0) {
+        	    $dat = [];
+            	while ($row = mysqli_fetch_assoc($data)) {
+               	 
+               	 $msg = "Your ".$row["ItemName"]." level is low.";                
+               	 $push = new PushNotification();
+				 $pushDat = $push->sendNotificationtoDevice($row["DeviceToken"], $msg, $_GET["section_id"]); 
+            	}
+
+        	} else {
+            	$dat = array(
+                	"Error" => "Section list could not be fetched. Please try later."
+            	);
+        }
+        }
+        else {
+            $dat = array(
+                "Error" => "user id param missing"
+            );
+        }
+
+        array_push($dat, $pushDat);
         return $dat;
     }
 }
