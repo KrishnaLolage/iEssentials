@@ -35,8 +35,8 @@ class Tray
     {
         if (isset($_SERVER["REQUEST_METHOD"])) {
             if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                //$data = $this->createSection();
-                $data = "NO POST Method";
+                $data = $this->createTray();
+                //$data = "NO POST Method";
             } else if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
 				if(isset($_GET["user_id"]))
@@ -252,6 +252,97 @@ class Tray
         }
         
         return $data;
+    }
+    
+    
+    public function getTrayById($trayId)
+    {
+        
+        if ($trayId) {
+            $sql = "SELECT * from Tray where id = " . $trayId;
+            
+            $data = mysqli_query($this->conn, $sql);
+            
+            if (mysqli_num_rows($data) > 0) {
+                $data = mysqli_fetch_assoc($data);
+            } else {
+                $data = array(
+                    "Error" => "Section details not found."
+                );
+            }
+        } else {
+            $data = array(
+                "Error" => "Section id not valid."
+            );
+        }
+        
+        return $data;
+    }
+    
+    public function createTray()
+    {
+    
+    try
+    {
+
+     if (isset($_POST["tray_name"]) && isset($_POST["user_id"])) {
+            $trayNmae = $_POST["tray_name"];
+            $userId   = $_POST["user_id"];
+
+			$sql = "INSERT INTO Tray (Name, UserId) VALUES(\"" . $trayNmae . "\", " . $userId . ")";
+//            $sql = "INSERT INTO User (Username, Password, Phone, Image) VALUES ('" . $uname . "', '" . $pwd . "', '" . $phone . "', '{$imgData}')";
+
+            if (mysqli_query($this->conn, $sql)) {
+
+				$trayId = mysqli_insert_id($this->conn);            
+            	$sectionList = $_POST["sections"];
+
+            	foreach ($sectionList as $section) {
+                	$sql = "INSERT INTO Section (Name, ItemName, TrayId, GenericIdentifier) VALUES ('" . $section["name"] . "', '" . $section["name"] . "', ".$trayId.", '".$section["identfier"]."')";                
+                	mysqli_query($this->conn, $sql);
+                }
+                
+                $data = $this->getTrayById($trayId);
+                $data["sections"] = $this->getAllSectionWithTaryId($trayId);
+                
+            } else {
+                $data = array(
+                    "Error" => "Failed to create tray. Please try agian."
+                );
+            }
+        }
+        
+		return $data;
+		}
+		catch(Exception $e)
+		{
+			$data = array(
+                    "Exception" => "Exception ".$e
+                );
+		}
+		
+		return $data;
+    
+    }
+    
+    
+    public function createTrayGETMethod()
+    {
+    
+    try
+    {
+    	echo json_encode($_SERVER);
+    		$sectionList = $_GET["sections"];
+    }
+		catch(Exception $e)
+		{
+			$data = array(
+                    "Exception" => "Exception ".$e
+                );
+		}
+		
+		return $data;
+    
     }
 }
 

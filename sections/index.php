@@ -178,19 +178,7 @@ class Section
                     					"section" => $data
                 					);
                     }
-                
-                
-                if (isset($_POST["user_id"]))
-                {
-                	//send Silent Notification
-                	$this->sendSilentNotificationtoUserApp($_POST["user_id"], $_POST["section_id"]);
-                	array_push($data, $dat);
-                }
-                
-                $push = new PushNotification();
-				$dat = $push->sendSilentNotificationtoDevice($row["DeviceToken"]);
-                
-                
+                                    
             } else {
                 $data = array(
                     "Error" => "Update section failed. Please try later.",
