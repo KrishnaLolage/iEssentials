@@ -254,7 +254,7 @@ class Section
             
             	$section = $this->getSectionByTrayIdANDIdentifier($trayId, $_GET["sectionIdentifier"]);
                 
-                    if ($data["Status"] == "Low" || $data["Status"] == "Empty") {
+                    if ($section["Status"] == "Low" || $section["Status"] == "Empty") {
                         //trigger SMS, Notification
                         $account_sid = 'AC79bd8b9ef7076e78c1a087e6b1ca444d';
                         $auth_token  = '1b2d0de791aad80733cd872a37017258';
@@ -263,7 +263,7 @@ class Section
                         
                         $phones = array("+919860262264");
                         
-                        $msg = "Your ".$data["ItemName"]." level is low.";                
+                        $msg = "Your ".$section["ItemName"]." level is low.";                
                         
                         foreach ($phones as $value) {
 						 
@@ -279,14 +279,14 @@ class Section
                         {
                         	$data = array(
                     					"sent_sms" => "true",
-                    					"section" => $data
+                    					"section" => $section
                 					);
                         }
                         else
                         {
                         	$data = array(
                     					"sent_sms" => "false",
-                    					"section" => $data
+                    					"section" => $section
                 					);
                         }
                         
