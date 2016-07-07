@@ -272,7 +272,7 @@ class Tray
             }
         } else {
             $data = array(
-                "Error" => "Section id not valid."
+                "Error" => "Tray id not valid."
             );
         }
         

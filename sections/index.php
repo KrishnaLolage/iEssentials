@@ -109,6 +109,30 @@ class Section
         return $data;
     }
     
+    public function getSectionByTrayIdANDIdentifier($trayId, $identifier)
+    {
+        
+        if ($trayId) {
+            $sql = "SELECT id as section_id, Name, ItemName, Quantity, OriginalQty, Unit, UpdatedTime, Threshold, Status, TrayId as tray_id, GenericIdentifier, UserItemQty FROM Section where TrayId = " . $trayId." AND GenericIdentifier = '".$identifier."'";
+            
+            $data = mysqli_query($this->conn, $sql);
+            
+            if (mysqli_num_rows($data) > 0) {
+                $data = mysqli_fetch_assoc($data);
+            } else {
+                $data = array(
+                    "Error" => "Section details not found."
+                );
+            }
+        } else {
+            $data = array(
+                "Error" => "Section id not valid."
+            );
+        }
+        
+        return $data;
+    }
+    
     public function getAllSectionWithTaryId($trayid)
     {
         
@@ -196,16 +220,40 @@ class Section
         return $data;
     }
 
+
+	public function getTrayIdforUser($userId, $macId)
+	{
+		$sql = "SELECT * FROM Tray where userid = ".$userId." AND TrayMacAddress = '".$macId."'";
+            
+            $data = mysqli_query($this->conn, $sql);
+            
+            if (mysqli_num_rows($data) > 0) {
+                $data = mysqli_fetch_assoc($data);
+                return $data["id"];
+            } else {
+                $data = array(
+                    "Error" => "Tray details not found."
+                );
+                
+                return null;
+            }
+	}
+	
 	Public function updateSectionFromHardware()
     {
-        if (isset($_GET["section_id"]) && isset($_GET["quantity"])) {
+        if (isset($_GET["sectionIdentifier"]) && isset($_GET["quantity"]) && isset($_GET["macaddress"]) && isset($_GET["user_id"])) {
             
-            $sql = "UPDATE Section SET Quantity = " . $_GET["quantity"]. " WHERE id = " . $_GET["section_id"];
+            $trayId = $this->getTrayIdforUser($_GET["user_id"], $_GET["macaddress"]);
+            
+            if(!$trayId)
+            	return $data = array( "Error" => "Invalid Tray Id");
+            	
+            $sql = "UPDATE Section SET Quantity = " . $_GET["quantity"]. " WHERE genericidentifier = '" . $_GET["sectionIdentifier"]."' AND TrayId = " . $trayId;
             
             if (mysqli_query($this->conn, $sql)) {
-                $data = $this->getSectionById($_GET["section_id"]);
+            
+            	$section = $this->getSectionByTrayIdANDIdentifier($trayId, $_GET["sectionIdentifier"]);
                 
-//                 if (!isset($data["Error"])) {
                     if ($data["Status"] == "Low" || $data["Status"] == "Empty") {
                         //trigger SMS, Notification
                         $account_sid = 'AC79bd8b9ef7076e78c1a087e6b1ca444d';
@@ -251,7 +299,7 @@ class Section
                     {
                     	$data = array(
                     					"sent_sms" => "false",
-                    					"section" => $data
+                    					"section" => $section
                 					);
                     }
 //                 }

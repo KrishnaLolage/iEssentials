@@ -112,6 +112,8 @@ class User
     
     public function updateUserNew(){
     		
+    		$imgData = null;
+    		
     		if(isset($_FILES['uploadedfile']['name']) && isset($_POST["user_id"]))
     		{
    				$uploaddir = 'pics/';
@@ -122,8 +124,8 @@ class User
 			    
 			    	$imgData =addslashes (file_get_contents($uploadfile));
 
-			    	$sql = "UPDATE User SET Image = {$imgData} WHERE id = ".$_POST["user_id"];
-			    	$data2 = mysqli_query($this->conn, $sql);
+//			    	$sql = "UPDATE User SET Image = {$imgData} WHERE id = ".$_POST["user_id"];
+//			    	$data2 = mysqli_query($this->conn, $sql);
     			}
 			    else {
 			    
@@ -140,11 +142,11 @@ class User
             
             if(isset($_POST["phone"]))
             {
-    			$sql = "UPDATE User SET Username = '".$uname."', Password = '".$pwd."', Phone = ".$phone." WHERE id = ".$_POST["user_id"];
+    			$sql = "UPDATE User SET Username = '".$uname."', Password = '".$pwd."', Phone = ".$phone.", Image = '{$imgData}' WHERE id = ".$_POST["user_id"];
     		}
     		else
     		{
-    			$sql = "UPDATE User SET Username = '".$uname."', Password = '".$pwd."' WHERE id = ".$_POST["user_id"];
+    			$sql = "UPDATE User SET Username = '".$uname."', Password = '".$pwd."',  Image = '{$imgData}' WHERE id = ".$_POST["user_id"];
     		}
     		
             if (mysqli_query($this->conn, $sql)) {
