@@ -200,6 +200,9 @@ class User
         $data = mysqli_query($this->conn, $sql);
         
         $result = $this->conn->query($sql);
+        
+        echo json_encode($result);
+        
         if (mysqli_num_rows($result) > 0) {
             $data = mysqli_fetch_assoc($result);
             
