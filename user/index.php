@@ -206,6 +206,7 @@ class User
             $img = $data["Image"];
     		$b64img = base64_encode ($img);
 		    $data["Image"] = $b64img;
+		    echo $data["Image"];
         } else {
             $data = array(
                 "Error" => "Please verify username and password."
