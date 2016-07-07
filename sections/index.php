@@ -291,7 +291,7 @@ class Section
                         }
                         
                         //Send Push notification
-						$pushData = $this->sendNotificationtoUserApp($_GET["user_id"], $_GET["section_id"]);
+						$pushData = $this->sendNotificationtoUserApp($_GET["user_id"], $section["section_id"]);
 						
 						array_push($data, array("PushNotification"=>$pushData));
                     }
@@ -351,7 +351,7 @@ class Section
 	{
         if ($userId) {
             $sql = "SELECT distinct(M.DeviceToken), M.Id, M.DeviceType, M.UserId, S.ItemName FROM MobileDevices M inner join Tray T on (M.UserId = T.UserId) inner join Section S on (T.id = S.TrayId) Where M.UserId = " . $userId." AND S.Id = ". $sectionId;
-            
+
             $data = mysqli_query($this->conn, $sql);
         
         	if (mysqli_num_rows($data) > 0) {
