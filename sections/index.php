@@ -256,44 +256,44 @@ class Section
                 
                     if ($section["Status"] == "Low" || $section["Status"] == "Empty") {
                         //trigger SMS, Notification
-                        $account_sid = 'AC79bd8b9ef7076e78c1a087e6b1ca444d';
-                        $auth_token  = '1b2d0de791aad80733cd872a37017258';
-                        $client      = new Services_Twilio($account_sid, $auth_token);
-                        
-                        
-                        $phones = array("+919860262264");
-                        
-                        $msg = "Your ".$section["ItemName"]." level is low.";                
-                        
-                        foreach ($phones as $value) {
-						 
-						 	$message = $client->account->messages->create(array(
-                         	   'To' => $value,
-                         	   'From' => "+19103632856",
-                        	    'Body' => $msg
-                     	   ));
-                           
-						}
-                        
-                        if($message->sid)
-                        {
-                        	$data = array(
-                    					"sent_sms" => "true",
-                    					"section" => $section
-                					);
-                        }
-                        else
-                        {
-                        	$data = array(
-                    					"sent_sms" => "false",
-                    					"section" => $section
-                					);
-                        }
+//                         $account_sid = 'AC79bd8b9ef7076e78c1a087e6b1ca444d';
+//                         $auth_token  = '1b2d0de791aad80733cd872a37017258';
+//                         $client      = new Services_Twilio($account_sid, $auth_token);
+//                         
+//                         
+//                         $phones = array("+919860262264");
+//                         
+//                         $msg = "Your ".$section["ItemName"]." level is low.";                
+//                         
+//                         foreach ($phones as $value) {
+// 						 
+// 						 	$message = $client->account->messages->create(array(
+//                          	   'To' => $value,
+//                          	   'From' => "+19103632856",
+//                         	    'Body' => $msg
+//                      	   ));
+//                            
+// 						}
+//                         
+//                         if($message->sid)
+//                         {
+//                         	$data = array(
+//                     					"sent_sms" => "true",
+//                     					"section" => $section
+//                 					);
+//                         }
+//                         else
+//                         {
+//                         	$data = array(
+//                     					"sent_sms" => "false",
+//                     					"section" => $section
+//                 					);
+//                         }
                         
                         //Send Push notification
-						//$pushData = $this->sendNotificationtoUserApp($_GET["user_id"], $section["section_id"]);
+						$pushData = $this->sendNotificationtoUserApp($_GET["user_id"], $section["section_id"]);
 						
-						//array_push($data, array("PushNotification"=>$pushData));
+						array_push($data, array("PushNotification"=>$pushData));
                     }
                     else
                     {
