@@ -254,6 +254,10 @@ class Section
             
             	$section = $this->getSectionByTrayIdANDIdentifier($trayId, $_GET["sectionIdentifier"]);
                 
+                $data = array(
+                				"section" => $section
+                			);
+                
                     if ($section["Status"] == "Low" || $section["Status"] == "Empty") {
                         //trigger SMS, Notification
 //                         $account_sid = 'AC79bd8b9ef7076e78c1a087e6b1ca444d';
