@@ -201,15 +201,13 @@ class User
         
         $result = $this->conn->query($sql);
         
-        echo json_encode($result);
-        
         if (mysqli_num_rows($result) > 0) {
             $data = mysqli_fetch_assoc($result);
             
             $img = $data["Image"];
     		$b64img = base64_encode ($img);
 		    $data["Image"] = $b64img;
-		    echo $data["Image"];
+
         } else {
             $data = array(
                 "Error" => "Please verify username and password."
