@@ -297,7 +297,7 @@ class Section
                     }catch(Exception $e)
                     {
                     	$data = array(
-                    					"Exception" => $e
+                    					"Exception" => $e->getMessage()
                 					);
                     }
                         
