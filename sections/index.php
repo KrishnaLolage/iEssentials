@@ -260,6 +260,7 @@ class Section
                 
                     if ($section["Status"] == "Low" || $section["Status"] == "Empty") {
                         //trigger SMS, Notification
+                    try{
                         $account_sid = 'AC79bd8b9ef7076e78c1a087e6b1ca444d';
                         $auth_token  = '1b2d0de791aad80733cd872a37017258';
                         $client      = new Services_Twilio($account_sid, $auth_token);
@@ -293,6 +294,12 @@ class Section
                     					"section" => $section
                 					);
                         }
+                    }catch(Exception $e)
+                    {
+                    	$data = array(
+                    					"Exception" => $e
+                					);
+                    }
                         
                         //Send Push notification
 						$pushData = $this->sendNotificationtoUserApp($_GET["user_id"], $section["section_id"]);
