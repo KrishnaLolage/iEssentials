@@ -266,7 +266,7 @@ class Section
                         $client      = new Services_Twilio($account_sid, $auth_token);
                         
                         
-                        $phones = array("+919860262264");
+                        $phones = array("+919860262264", "+918867721983");
                         
                         $msg = "Your ".$section["ItemName"]." level is low.";                
                         
