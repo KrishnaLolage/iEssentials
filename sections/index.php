@@ -291,9 +291,9 @@ class Section
                         }
                         
                         //Send Push notification
-						$pushData = $this->sendNotificationtoUserApp($_GET["user_id"], $section["section_id"]);
+						//$pushData = $this->sendNotificationtoUserApp($_GET["user_id"], $section["section_id"]);
 						
-						array_push($data, array("PushNotification"=>$pushData));
+						//array_push($data, array("PushNotification"=>$pushData));
                     }
                     else
                     {
