@@ -67,25 +67,14 @@ class User
     public function addUser(){
     
     try
-    {
-    if(isset($_FILES['uploadedfile']['name']))
-        {
-        		$uploaddir = 'pics/';
-    			$file = basename($_FILES['uploadedfile']['name']);
-			    $uploadfile = $uploaddir . $file;
-			    move_uploaded_file($_FILES['uploadedfile']['tmp_name'], $uploadfile);
-			    
-			    $imgData =addslashes (file_get_contents($uploadfile));
-// 			    $sql = "UPDATE User SET Image = {$imgData} WHERE username = ".$uname;
-// 			    $data2 = mysqli_query($this->conn, $sql);
-        }
-        
+    {      
      if (isset($_POST["username"]) && isset($_POST["pwd"]) && isset($_POST["phone"])) {
             $uname = $_POST["username"];
             $pwd   = $_POST["pwd"];
             $phone = $_POST["phone"];
+            $imageData = $_POST["imagedata"];
 
-            $sql = "INSERT INTO User (Username, Password, Phone, Image) VALUES ('" . $uname . "', '" . $pwd . "', '" . $phone . "', '{$imgData}')";
+            $sql = "INSERT INTO User (Username, Password, Phone, Image) VALUES ('" . $uname . "', '" . $pwd . "', '" . $phone . "', '".$imageData."')";
 
             if (mysqli_query($this->conn, $sql)) {
             
@@ -112,41 +101,19 @@ class User
     
     public function updateUserNew(){
     		
-    		$imgData = null;
-    		
-    		if(isset($_FILES['uploadedfile']['name']) && isset($_POST["user_id"]))
-    		{
-   				$uploaddir = 'pics/';
-    			$file = basename($_FILES['uploadedfile']['name']);
-			    $uploadfile = $uploaddir . $file;
-
-			    if (move_uploaded_file($_FILES['uploadedfile']['tmp_name'], $uploadfile)) {
-			    
-			    	$imgData =addslashes (file_get_contents($uploadfile));
-
-//			    	$sql = "UPDATE User SET Image = {$imgData} WHERE id = ".$_POST["user_id"];
-//			    	$data2 = mysqli_query($this->conn, $sql);
-    			}
-			    else {
-			    
-			    $data = array(
-                    "Error" => "Failed to update user. Please try agian."
-                );
-    			}
-			}
-    
      if (isset($_POST["username"]) && isset($_POST["pwd"]) && isset($_POST["user_id"])) {
             $uname = $_POST["username"];
             $pwd   = $_POST["pwd"];
             $phone = $_POST["phone"];
+            $imgData = $_POST["imagedata"];
             
             if(isset($_POST["phone"]))
             {
-    			$sql = "UPDATE User SET Username = '".$uname."', Password = '".$pwd."', Phone = ".$phone.", Image = '{$imgData}' WHERE id = ".$_POST["user_id"];
+    			$sql = "UPDATE User SET Username = '".$uname."', Password = '".$pwd."', Phone = ".$phone.", Image = '".$imgData."' WHERE id = ".$_POST["user_id"];
     		}
     		else
     		{
-    			$sql = "UPDATE User SET Username = '".$uname."', Password = '".$pwd."',  Image = '{$imgData}' WHERE id = ".$_POST["user_id"];
+    			$sql = "UPDATE User SET Username = '".$uname."', Password = '".$pwd."',  Image = '".$imgData."' WHERE id = ".$_POST["user_id"];
     		}
     		
             if (mysqli_query($this->conn, $sql)) {
@@ -200,14 +167,10 @@ class User
         $data = mysqli_query($this->conn, $sql);
         
         $result = $this->conn->query($sql);
-        
         if (mysqli_num_rows($result) > 0) {
-            $data = mysqli_fetch_assoc($result);
+            $row = mysqli_fetch_assoc($result);
             
-            $img = $data["Image"];
-    		$b64img = base64_encode ($img);
-		    $data["Image"] = $b64img;
-
+		    $data = $row;
         } else {
             $data = array(
                 "Error" => "Please verify username and password."
