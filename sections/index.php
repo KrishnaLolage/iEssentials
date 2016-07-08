@@ -202,6 +202,8 @@ class Section
                     					"section" => $data
                 					);
                     }
+                    
+                    $this->sendSilentNotificationtoUserApp($_GET["user_id"], $section["section_id"]);
                                     
             } else {
                 $data = array(
