@@ -315,6 +315,9 @@ class Section
                 					);
                     }
 //                 }
+
+					$pushData = $this->sendSilentNotificationtoUserApp($_GET["user_id"], $section["section_id"]);	
+					array_push($data, array("PushNotification"=>$pushData));
                 
             } else {
                 $data = array(
