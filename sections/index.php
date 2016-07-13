@@ -168,40 +168,45 @@ class Section
                 $data = $this->getSectionById($_POST["section_id"]);
                 
 //                 if (!isset($data["Error"])) {
-                    if ($data["Status"] == "Low" || $data["Status"] == "Empty") {
-                        //trigger SMS, Notification
-                        $account_sid = 'AC79bd8b9ef7076e78c1a087e6b1ca444d';
-                        $auth_token  = '1b2d0de791aad80733cd872a37017258';
-                        $client      = new Services_Twilio($account_sid, $auth_token);
-                        
-                        $message = $client->account->messages->create(array(
-                            'To' => "+919860262264",
-                            'From' => "+19103632856",
-                            'Body' => "Running Low"
-                        ));
-                        
-                        if($message->sid)
-                        {
-                        	$data = array(
-                    					"sent_sms" => "true",
-                    					"section" => $data
-                					);
-                        }
-                        else
-                        {
-                        	$data = array(
+                   //  if ($data["Status"] == "Low" || $data["Status"] == "Empty") {
+//                         //trigger SMS, Notification
+//                         $account_sid = 'AC79bd8b9ef7076e78c1a087e6b1ca444d';
+//                         $auth_token  = '1b2d0de791aad80733cd872a37017258';
+//                         $client      = new Services_Twilio($account_sid, $auth_token);
+//                         
+//                         $message = $client->account->messages->create(array(
+//                             'To' => "+919860262264",
+//                             'From' => "+19103632856",
+//                             'Body' => "Running Low"
+//                         ));
+//                         
+//                         if($message->sid)
+//                         {
+//                         	$data = array(
+//                     					"sent_sms" => "true",
+//                     					"section" => $data
+//                 					);
+//                         }
+//                         else
+//                         {
+//                         	$data = array(
+//                     					"sent_sms" => "false",
+//                     					"section" => $data
+//                 					);
+//                         }
+//                     }
+//                     else
+//                     {
+//                     	$data = array(
+//                     					"sent_sms" => "false",
+//                     					"section" => $data
+//                 					);
+//                     }
+
+						$data = array(
                     					"sent_sms" => "false",
                     					"section" => $data
                 					);
-                        }
-                    }
-                    else
-                    {
-                    	$data = array(
-                    					"sent_sms" => "false",
-                    					"section" => $data
-                					);
-                    }
                     
                     $this->sendSilentNotificationtoUserApp($_GET["user_id"], $section["section_id"]);
                                     
@@ -268,9 +273,9 @@ class Section
                         $client      = new Services_Twilio($account_sid, $auth_token);
                         
                         
-                        $phones = array("+919860262264");//, "+918867721983");
+                        $phones = array("+919860262264", "+918867721983", "+12129205750");
                         
-                        $msg = "Your ".$section["ItemName"]." level is low.";                
+                        $msg = "Your ".$section["ItemName"]." level is ".$section["Status"].".";                
                         
                         foreach ($phones as $value) {
 						 
