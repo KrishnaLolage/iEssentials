@@ -268,7 +268,7 @@ class Section
                         $client      = new Services_Twilio($account_sid, $auth_token);
                         
                         
-                        $phones = array("+919860262264", "+918867721983");
+                        $phones = array("+919860262264");//, "+918867721983");
                         
                         $msg = "Your ".$section["ItemName"]." level is low.";                
                         
@@ -367,7 +367,7 @@ class Section
     Public function sendNotificationtoUserApp($userId, $sectionId)
 	{
         if ($userId) {
-            $sql = "SELECT distinct(M.DeviceToken), M.Id, M.DeviceType, M.UserId, S.ItemName FROM MobileDevices M inner join Tray T on (M.UserId = T.UserId) inner join Section S on (T.id = S.TrayId) Where M.UserId = " . $userId." AND S.Id = ". $sectionId;
+            $sql = "SELECT distinct(M.DeviceToken), M.Id, M.DeviceType, M.UserId, S.ItemName, S.Status FROM MobileDevices M inner join Tray T on (M.UserId = T.UserId) inner join Section S on (T.id = S.TrayId) Where M.UserId = " . $userId." AND S.Id = ". $sectionId;
 
             $data = mysqli_query($this->conn, $sql);
         
@@ -375,7 +375,7 @@ class Section
         	    $dat = [];
             	while ($row = mysqli_fetch_assoc($data)) {
                	 
-               	 $msg = "Your ".$row["ItemName"]." level is low.";                
+               	 $msg = "Your ".$row["ItemName"]." level is ".$row["Status"].".";                
                	 $push = new PushNotification();
 				 $pushDat = $push->sendNotificationtoDevice($row["DeviceToken"], $msg, $_GET["section_id"]); 
             	}
