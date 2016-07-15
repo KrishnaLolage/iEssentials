@@ -52,7 +52,14 @@ class Section
             }
             else
             {
-            	$data = $this->updateSectionFromHardware();
+            	if(isset($_GET["sectionIdentifier"]))
+            	{
+            		$data = $this->updateSectionFromHardware();
+            	}
+            	else if(isset($_GET["quantity_A"]))
+            	{
+            		$data = $this->updateSectionFromHardwareNew();
+            	}
             }
             } else if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $data = $this->updateSection();
@@ -142,7 +149,13 @@ class Section
             $data = mysqli_query($this->conn, $sql);
             
             if (mysqli_num_rows($data) > 0) {
-                $data = mysqli_fetch_assoc($data);
+                
+				$dat = [];
+	            while ($row = mysqli_fetch_assoc($data)) {
+    	            array_push($dat, $row);
+        	    }
+            $data = $dat;
+                
             } else {
                 $data = array(
                     "Error" => "Please verify username and password."
@@ -168,47 +181,42 @@ class Section
                 $data = $this->getSectionById($_POST["section_id"]);
                 
 //                 if (!isset($data["Error"])) {
-                   //  if ($data["Status"] == "Low" || $data["Status"] == "Empty") {
-//                         //trigger SMS, Notification
-//                         $account_sid = 'AC79bd8b9ef7076e78c1a087e6b1ca444d';
-//                         $auth_token  = '1b2d0de791aad80733cd872a37017258';
-//                         $client      = new Services_Twilio($account_sid, $auth_token);
-//                         
-//                         $message = $client->account->messages->create(array(
-//                             'To' => "+919860262264",
-//                             'From' => "+19103632856",
-//                             'Body' => "Running Low"
-//                         ));
-//                         
-//                         if($message->sid)
-//                         {
-//                         	$data = array(
-//                     					"sent_sms" => "true",
-//                     					"section" => $data
-//                 					);
-//                         }
-//                         else
-//                         {
-//                         	$data = array(
-//                     					"sent_sms" => "false",
-//                     					"section" => $data
-//                 					);
-//                         }
-//                     }
-//                     else
-//                     {
-//                     	$data = array(
-//                     					"sent_sms" => "false",
-//                     					"section" => $data
-//                 					);
-//                     }
-
-						$data = array(
+                    if ($data["Status"] == "Low" || $data["Status"] == "Empty") {
+                        //trigger SMS, Notification
+                        $account_sid = 'AC79bd8b9ef7076e78c1a087e6b1ca444d';
+                        $auth_token  = '1b2d0de791aad80733cd872a37017258';
+                        $client      = new Services_Twilio($account_sid, $auth_token);
+                        
+                        $message = $client->account->messages->create(array(
+                            'To' => "+919860262264",
+                            'From' => "+19103632856",
+                            'Body' => "Running Low"
+                        ));
+                        
+                        if($message->sid)
+                        {
+                        	$data = array(
+                    					"sent_sms" => "true",
+                    					"section" => $data
+                					);
+                        }
+                        else
+                        {
+                        	$data = array(
                     					"sent_sms" => "false",
                     					"section" => $data
                 					);
+                        }
+                    }
+                    else
+                    {
+                    	$data = array(
+                    					"sent_sms" => "false",
+                    					"section" => $data
+                					);
+                    }
                     
-                    $this->sendSilentNotificationtoUserApp($_GET["user_id"], $section["section_id"]);
+                    $this->sendSilentNotificationtoUserApp($_GET["user_id"]);
                                     
             } else {
                 $data = array(
@@ -273,9 +281,9 @@ class Section
                         $client      = new Services_Twilio($account_sid, $auth_token);
                         
                         
-                        $phones = array("+919860262264", "+918867721983", "+12129205750");
+                        $phones = array("+919860262264");//, "+918867721983");
                         
-                        $msg = "Your ".$section["ItemName"]." level is ".$section["Status"].".";                
+                        $msg = "Your ".$section["ItemName"]." level is low.";                
                         
                         foreach ($phones as $value) {
 						 
@@ -323,7 +331,7 @@ class Section
                     }
 //                 }
 
-					$pushData = $this->sendSilentNotificationtoUserApp($_GET["user_id"], $section["section_id"]);	
+					$pushData = $this->sendSilentNotificationtoUserApp($_GET["user_id"]);	
 					array_push($data, array("PushNotification"=>$pushData));
                 
             } else {
@@ -337,11 +345,125 @@ class Section
         return $data;
     }
 
+	Public function updateSectionFromHardwareNew()
+    {
+    	$data = [];
+        if (isset($_GET["quantity_A"]) && isset($_GET["quantity_B"]) && isset($_GET["quantity_C"]) && isset($_GET["macaddress"]) && isset($_GET["user_id"])) {
+            
+            $trayId = $this->getTrayIdforUser($_GET["user_id"], $_GET["macaddress"]);
+            
+            if(!$trayId)
+            	return $data = array( "Error" => "Invalid Tray Id");
+            	
+            $sql_A = "UPDATE Section SET Quantity = " . $_GET["quantity_A"]. " WHERE genericidentifier = 'A' AND TrayId = " . $trayId;
+            $sql_B = "UPDATE Section SET Quantity = " . $_GET["quantity_B"]. " WHERE genericidentifier = 'B' AND TrayId = " . $trayId;
+            $sql_C = "UPDATE Section SET Quantity = " . $_GET["quantity_C"]. " WHERE genericidentifier = 'C' AND TrayId = " . $trayId;
+            
+            $sqls = [];
+            
+            array_push($sqls, $sql_A);
+            array_push($sqls, $sql_B);
+            array_push($sqls, $sql_C);
+            
+            $error = null;
+            foreach ($sqls as $sql) {
+			     if (mysqli_query($this->conn, $sql))
+			     {
+			     }
+			     else
+			     {
+			     	$error = true;
+			     	break;
+			     }
+			} 
+           
+            if (!$error) {
+            
+            	$sectionList = $this->getAllSectionWithTaryId($trayId);
+				
+				$secArray = [];
+                foreach ($sectionList as $section) {
 
-	Public function sendSilentNotificationtoUserApp($userId, $sectionId)
+					$sendSMS = $_GET["sms_".$section["GenericIdentifier"]];
+
+                    if ($sendSMS == "1" && ($section["Status"] == "Low" || $section["Status"] == "Empty")) {
+                        //trigger SMS, Notification
+                    try{
+                        $account_sid = 'AC79bd8b9ef7076e78c1a087e6b1ca444d';
+                        $auth_token  = '1b2d0de791aad80733cd872a37017258';
+                        $client      = new Services_Twilio($account_sid, $auth_token);
+                        
+                        
+                        $phones = array("+919860262264");//, "+918867721983");
+                        
+                        $msg = "Your ".$section["ItemName"]." level is low.";                
+                        
+                          foreach ($phones as $value) {
+						 
+						 	$message = $client->account->messages->create(array(
+                         	   'To' => $value,
+                         	   'From' => "+19103632856",
+                        	    'Body' => $msg
+                     	   ));
+                           
+						}
+                        
+                        if($message->sid)
+                        {
+                        	$secArray = array(
+                    					"sent_sms" => "true",
+                    					"section" => $section
+                					);
+                        }
+                        else
+                        {
+                        	$secArray = array(
+                    					"sent_sms" => "false",
+                    					"section" => $section
+                					);
+                        }
+                    }catch(Exception $e)
+                    {
+                    	$secArray = array(
+                    					"Exception" => $e->getMessage(),
+                    					"Code" => $e->getCode ()
+                					);
+                    }
+                        
+                        //Send Push notification
+						$pushData = $this->sendNotificationtoUserApp($_GET["user_id"], $section["section_id"]);
+						
+						array_push($data, array("PushNotification"=>$pushData));
+                    }
+
+                    $section["sent_sms"] = "false";
+                			
+                	array_push($secArray, $section);
+                }
+
+                 $data = array(
+                				"section" => $secArray
+                			);
+                			
+                $pushData = $this->sendSilentNotificationtoUserApp($_GET["user_id"]);	
+                array_push($data, array("PushNotification"=>$pushData));
+                			
+					
+            } else {
+                $data = array(
+                    "Error" => "Update section failed. Please try later.",
+                    "SQL Error" => mysqli_error($this->conn)
+                );
+            }
+        }
+        
+        return $data;
+    }
+
+	Public function sendSilentNotificationtoUserApp($userId)
 	{
         if ($userId) {
-            $sql = "SELECT distinct(M.DeviceToken), M.Id, M.DeviceType, M.UserId  FROM MobileDevices M inner join Tray T on (M.UserId = T.UserId) inner join Section S on (T.id = S.TrayId) Where M.UserId = " . $userId." AND S.Id = ". $sectionId;
+            $sql = "SELECT distinct(M.DeviceToken), M.Id, M.DeviceType, M.UserId  FROM MobileDevices M inner join Tray T on (M.UserId = T.UserId) inner join Section S on (T.id = S.TrayId) Where M.UserId = " . $userId;
             
             $data = mysqli_query($this->conn, $sql);
         
@@ -383,11 +505,12 @@ class Section
                	 $msg = "Your ".$row["ItemName"]." level is ".$row["Status"].".";                
                	 $push = new PushNotification();
 				 $pushDat = $push->sendNotificationtoDevice($row["DeviceToken"], $msg, $_GET["section_id"]); 
+				 array_push($pushDat, array($row));
             	}
 
         	} else {
             	$dat = array(
-                	"Error" => "Section list could not be fetched. Please try later."
+                	"Error" => "Device list could not be fetched. Please try later."
             	);
         }
         }

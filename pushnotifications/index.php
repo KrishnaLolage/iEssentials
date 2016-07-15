@@ -74,7 +74,7 @@ class PushNotification
         ////////////////////////////////////////////////////////////////////////////////
         
         $deviceToken =  substr($deviceToken, 1, -1);
-        $deviceToken = str_replace(' ', '', $deviceToken);
+        $deviceToken =  str_replace(' ', '', $deviceToken);
 
         $ctx = stream_context_create();
         stream_context_set_option($ctx, 'ssl', 'local_cert', "apns-dev-cert.pem");
@@ -119,7 +119,7 @@ class PushNotification
     }
 
 }
-// $push = new PushNotification();
-// $push->sendNotificationtoDevice("<eb8708ba 26e30765 479a4620 2c08efa7 b065a7ad c7473c94 b8b060e7 1168e68a>", "Hello Krishna");
+//  $push = new PushNotification();
+//  $push->sendNotificationtoDevice("<eb8708ba 26e30765 479a4620 2c08efa7 b065a7ad c7473c94 b8b060e7 1168e68a>", "Hello Krishna");
 			
 ?>
