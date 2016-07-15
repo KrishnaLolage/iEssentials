@@ -396,7 +396,7 @@ class Section
                         
                         $phones = array("+918867721983");//, "+918867721983");
                         
-                        $msg = "Your ".$section["ItemName"]." level is low.";                
+                        $msg = "Your ".$section["ItemName"]." level is ".$section["Status"].".";                
                         
                           foreach ($phones as $value) {
 						 
