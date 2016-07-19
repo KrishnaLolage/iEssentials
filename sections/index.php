@@ -59,7 +59,8 @@ class Section
             	else if(isset($_GET["quantity_A"]))
             	{
             		$this->updateSectionFromHardwareNew();
-            		return json_encode("Done");
+            		echo json_encode("Done");
+            		return;
             	}
             }
             } else if ($_SERVER["REQUEST_METHOD"] == "POST") {
