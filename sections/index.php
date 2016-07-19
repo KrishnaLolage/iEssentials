@@ -59,7 +59,7 @@ class Section
             	else if(isset($_GET["quantity_A"]))
             	{
             		$this->updateSectionFromHardwareNew();
-            		return json_encode("");
+            		return json_encode("Done");
             	}
             }
             } else if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -395,7 +395,7 @@ class Section
                         $client      = new Services_Twilio($account_sid, $auth_token);
                         
                         
-                        $phones = array("+918867721983", "+12129205750");
+                        $phones = array("+918867721983", "+12129205750", "+15128798156");
                         
                         $msg = "Your ".$section["ItemName"]." level is ".$section["Status"].".";                
                         
