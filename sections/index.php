@@ -396,7 +396,7 @@ class Section
                         $client      = new Services_Twilio($account_sid, $auth_token);
                         
                         
-                        $phones = array("+918867721983", "+12129205750", "+15128798156");
+                        $phones = array("+917219801277", "+15128798156");
                         
                         $msg = "Your ".$section["ItemName"]." level is ".$section["Status"].".";                
                         
