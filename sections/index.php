@@ -387,7 +387,7 @@ class Section
                 foreach ($sectionList as $section) {
 
 					$sendSMS = $_GET["sms_".$section["GenericIdentifier"]];
-					$skipsms = $_GET["skipsms"]];
+					$skipsms = $_GET["skipsms"];
 
                     if ($sendSMS == "1" && ($section["Status"] == "Low" || $section["Status"] == "Empty")) {
                         //trigger SMS, Notification
@@ -434,13 +434,6 @@ class Section
                         }
                         
                     	}
-                        else
-                        {
-                        	$secArray = array(
-                    					"sent_sms" => "skipped",
-                    					"section" => $section
-                					);
-                        }
                     }catch(Exception $e)
                     {
                     	$secArray = array(
@@ -521,7 +514,7 @@ class Section
         	    $dat = [];
         	    $push = new PushNotification();
             	while ($row = mysqli_fetch_assoc($data)) {
-               	 
+
                	 $msg = "Your ".$row["ItemName"]." level is ".$row["Status"].".";                
 				 $pushDat = $push->sendNotificationtoDevice($row["DeviceToken"], $msg); 
 				 array_push($pushDat, array($row));
