@@ -393,7 +393,7 @@ class Section
                         //trigger SMS, Notification
                     try{
                     
-                    	if (isset($_GET["skipsms"] && skipsms != "0")
+                    	if (isset($_GET["skipsms"]) && skipsms != "0")
                     	{
                     	}
                     	else
