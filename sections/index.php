@@ -387,10 +387,18 @@ class Section
                 foreach ($sectionList as $section) {
 
 					$sendSMS = $_GET["sms_".$section["GenericIdentifier"]];
+					$skipsms = $_GET["skipsms"]];
 
                     if ($sendSMS == "1" && ($section["Status"] == "Low" || $section["Status"] == "Empty")) {
                         //trigger SMS, Notification
                     try{
+                    
+                    	if (isset($_GET["skipsms"] && skipsms != "0")
+                    	{
+                    	}
+                    	else
+                    	{
+                    		
                         $account_sid = 'AC79bd8b9ef7076e78c1a087e6b1ca444d';
                         $auth_token  = '1b2d0de791aad80733cd872a37017258';
                         $client      = new Services_Twilio($account_sid, $auth_token);
@@ -421,6 +429,15 @@ class Section
                         {
                         	$secArray = array(
                     					"sent_sms" => "false",
+                    					"section" => $section
+                					);
+                        }
+                        
+                    	}
+                        else
+                        {
+                        	$secArray = array(
+                    					"sent_sms" => "skipped",
                     					"section" => $section
                 					);
                         }
@@ -502,11 +519,11 @@ class Section
         
         	if (mysqli_num_rows($data) > 0) {
         	    $dat = [];
+        	    $push = new PushNotification();
             	while ($row = mysqli_fetch_assoc($data)) {
                	 
                	 $msg = "Your ".$row["ItemName"]." level is ".$row["Status"].".";                
-               	 $push = new PushNotification();
-				 $pushDat = $push->sendNotificationtoDevice($row["DeviceToken"], $msg, $_GET["section_id"]); 
+				 $pushDat = $push->sendNotificationtoDevice($row["DeviceToken"], $msg); 
 				 array_push($pushDat, array($row));
             	}
 
